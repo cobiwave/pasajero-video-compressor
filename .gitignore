@@ -41,3 +41,6 @@ pnpm-debug.log*
 *.mov
 *.mkv
 *.webm
+
+# Servidor compilado (tsc)
+dist-server/
