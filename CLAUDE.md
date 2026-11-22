@@ -36,6 +36,15 @@ TypeScript project references: `tsconfig.app.json` (src + shared, bundler resolu
   - Validation errors map to Spanish messages per field (`FIELD_ERRORS`); malformed JSON returns a JSON `ApiError`. In production, serves `dist/` with an SPA fallback (project root is found by walking up to `package.json`, so it works from `server/` and `dist-server/server/`).
 - **[src/](src/)** — `App.tsx` only composes. Logic lives in hooks (`useHealth`, `usePickFile`, `useProbe`, `useCompress` — reads the NDJSON stream and cancels via `AbortController`, which triggers the server-side kill — and `useSettings`, which persists settings + `presetId` to `localStorage` under `video-compressor:settings`). UI pieces live in `src/components/`; `src/lib/` has the fetch helpers, formatters and limit warnings.
 
+### Design system
+
+Mirrors [pasajero-website](https://github.com/cobiwave/pasajero-website)'s `app/globals.css`; keep them in sync.
+
+- **[src/styles/globals.css](src/styles/globals.css)**: tokens + reset + grid, copied from the site. `1rem = 10px`; breakpoints in `em`, mobile first with range syntax (`@media (width >= 48em)` tablet, `75em` desktop). Tokens: `--grid-*` (4/8/12 columns), `--space-section`, `--fs-*`, `--lh-*`, `--color-*` (light palette, no accent color). App-only extensions are marked as such: `--space-block`, `--font-mono` (paths/commands), `--color-danger`.
+- **Grid**: `.container` (page-level 4/8/12 columns) and `.subgrid` (inherits parent tracks), both in `:where()` (zero specificity). Header, each `Section` and the footer are `.container`s; on desktop the section head takes columns 1–3 and `.sectionBody` (a subgrid) columns 4–12, which `.meta`, `.presets` and `.settings` subgrid again.
+- **[src/styles/fonts.css](src/styles/fonts.css)**: Neue Haas Display (Roman = 400, Medium = 500, remapped like the site) and Stretch Pro (only for the "PASAJERO" wordmark). `local()` first, so the copies installed on the Mac are used; the files in `src/assets/fonts/` are the fallback. Medium's internal name is `NeueHaasDisplay-Mediu` (sic).
+- [src/App.css](src/App.css) uses tokens only, with native CSS nesting. Dev-only grid overlay: press **`g`** ([GridOverlay.tsx](src/components/GridOverlay.tsx), loaded only when `import.meta.env.DEV`).
+
 ## Invariants to preserve
 
 - Server binds to `127.0.0.1` only — it executes ffmpeg on arbitrary local paths, so never expose it on the network.

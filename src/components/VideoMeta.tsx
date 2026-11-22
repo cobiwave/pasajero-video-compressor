@@ -13,7 +13,7 @@ export function VideoMeta({ info }: { info: VideoInfo }) {
   ];
 
   return (
-    <dl className="meta">
+    <dl className="subgrid meta">
       {items.map(([label, value, title]) => (
         <div key={label} className={label === 'Archivo' ? 'wide' : ''}>
           <dt>{label}</dt>
