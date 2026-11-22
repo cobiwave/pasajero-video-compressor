@@ -10,6 +10,7 @@ import { SettingsForm } from './components/SettingsForm';
 import { VideoMeta } from './components/VideoMeta';
 import { useCompress } from './hooks/useCompress';
 import { useHealth } from './hooks/useHealth';
+import { usePickFile } from './hooks/usePickFile';
 import { useProbe } from './hooks/useProbe';
 import { useSettings } from './hooks/useSettings';
 import { limitWarnings } from './lib/limits';
@@ -26,6 +27,7 @@ export default function App() {
   const health = useHealth();
   const [input, setInput] = useState('');
   const probe = useProbe();
+  const picker = usePickFile();
   const job = useCompress();
   const { settings, preset, modified, choosePreset, update } = useSettings();
 
@@ -41,9 +43,17 @@ export default function App() {
           ? 'done'
           : 'idle';
 
-  const analyze = () => {
+  const analyze = (path = input) => {
     job.reset();
-    void probe.analyze(input);
+    void probe.analyze(path);
+  };
+
+  // Abre el Finder / Explorador; si se elige un archivo, se analiza directo
+  const pickFile = async () => {
+    const path = await picker.pick();
+    if (!path) return;
+    setInput(path);
+    analyze(path);
   };
 
   const warnings = limitWarnings(preset.limits, preset.label, info, settings);
@@ -71,10 +81,12 @@ export default function App() {
         <PathInput
           value={input}
           onChange={setInput}
-          onSubmit={analyze}
+          onSubmit={() => analyze()}
+          onPick={() => void pickFile()}
           disabled={running}
           probing={probe.probing}
-          error={probe.error}
+          picking={picker.picking}
+          error={picker.error || probe.error}
         />
         {info && <VideoMeta info={info} />}
       </Section>

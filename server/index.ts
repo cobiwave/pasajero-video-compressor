@@ -15,11 +15,13 @@ import type {
   ApiError,
   CompressRequest,
   HealthResponse,
+  PickResponse,
   ProbeResponse,
   RevealResponse,
   StreamMessage,
   VideoInfo,
 } from '../shared/types.js';
+import { pickVideoFile } from './picker.js';
 
 const PORT = Number(process.env.PORT) || 5174;
 const app = express();
@@ -273,6 +275,23 @@ app.post('/api/reveal', (req: Request, res: Response<RevealResponse | ApiError>)
         : ['xdg-open', [path.dirname(p)]];
   spawn(cmd, args, { detached: true, stdio: 'ignore' }).on('error', () => {}).unref();
   res.json({ ok: true });
+});
+
+// Abre el selector de archivos nativo (Finder / Explorador) y devuelve la ruta elegida.
+// Un solo diálogo a la vez; si el cliente se desconecta, se cierra el diálogo.
+let picking = false;
+app.post('/api/pick', async (_req, res: Response<PickResponse | ApiError>) => {
+  if (picking) return void res.status(409).json({ error: 'Ya hay un selector de archivos abierto' });
+  picking = true;
+  const controller = new AbortController();
+  res.on('close', () => controller.abort());
+  try {
+    res.json({ path: await pickVideoFile(controller.signal) });
+  } catch (e) {
+    if (!res.headersSent) res.status(500).json({ error: errorMessage(e) });
+  } finally {
+    picking = false;
+  }
 });
 
 // Rutas /api desconocidas → JSON, no el index.html

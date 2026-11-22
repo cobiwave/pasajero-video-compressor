@@ -4,12 +4,14 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  onPick: () => void;
   disabled: boolean;
   probing: boolean;
+  picking: boolean;
   error: string;
 }
 
-export function PathInput({ value, onChange, onSubmit, disabled, probing, error }: Props) {
+export function PathInput({ value, onChange, onSubmit, onPick, disabled, probing, picking, error }: Props) {
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit();
@@ -17,8 +19,11 @@ export function PathInput({ value, onChange, onSubmit, disabled, probing, error 
 
   return (
     <form onSubmit={submit} className="pathForm">
-      <label htmlFor="path" className="label">
-        Ruta del video
+      <button type="button" className="primary pickButton" onClick={onPick} disabled={disabled || picking || probing}>
+        {picking ? 'Esperando selección…' : 'Elegir video…'}
+      </button>
+      <label htmlFor="path" className="label or">
+        o pegá la ruta del video
       </label>
       <div className="row">
         <input

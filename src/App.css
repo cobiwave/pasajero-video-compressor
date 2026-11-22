@@ -206,6 +206,18 @@ body::after {
   display: grid;
   gap: 10px;
 }
+.pickButton {
+  justify-self: start;
+  padding: 15px 26px;
+}
+.or {
+  margin: 6px 0 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #5a554d;
+}
 .row {
   display: flex;
   gap: 8px;

@@ -5,6 +5,7 @@ import type {
   CompressRequestSchema,
   CompressSettingsSchema,
   HealthResponseSchema,
+  PickResponseSchema,
   ProbeRequestSchema,
   RevealRequestSchema,
   RevealResponseSchema,
@@ -42,6 +43,8 @@ export type CompressRequest = z.infer<typeof CompressRequestSchema>;
 // POST /api/reveal
 export type RevealRequest = z.infer<typeof RevealRequestSchema>;
 export type RevealResponse = z.infer<typeof RevealResponseSchema>;
+// POST /api/pick  → abre el selector de archivos nativo
+export type PickResponse = z.infer<typeof PickResponseSchema>;
 
 // --- Presets por destino ---
 export type PresetId = 'vertical' | 'x' | 'linkedin' | 'whatsapp' | 'web' | 'max';
