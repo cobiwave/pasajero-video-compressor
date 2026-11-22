@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-**PASAJERO Video Compressor**: a local-only web GUI for compressing videos with ffmpeg for social networks and the web (per-destination presets). The user pastes a filesystem path (not an upload); the server reads and writes files directly on disk. Requires Node 18+ and `ffmpeg`/`ffprobe` on PATH.
+**PASAJERO Video Compressor**: a local-only web GUI for compressing videos with ffmpeg for social networks and the web (per-destination presets). The user drops a video on the page or picks it with the native dialog (never an upload); the server reads and writes files directly on disk. Requires Node 18+ and `ffmpeg`/`ffprobe` on PATH.
 
 ## Commands
 
@@ -23,24 +23,25 @@ There are no tests, linter, or formatter configured. `PORT` env var overrides th
 TypeScript project references: `tsconfig.app.json` (src + shared, bundler resolution, noEmit), `tsconfig.node.json` (vite.config.ts), `tsconfig.server.json` (server + shared, NodeNext, emits to `dist-server/`). Because the server uses NodeNext, relative imports in `server/` and `shared/` need `.js` extensions.
 
 - **[shared/](shared/)** — imported by both sides.
-  - `constants.ts`: the single source of allowed values (`X264_PRESETS`, `WIDTHS`, `FPS_OPTIONS`, `CRF_RANGE`, `CRF_UI_RANGE`) as `as const` arrays.
+  - `constants.ts`: the single source of allowed values (`X264_PRESETS`, `WIDTHS`, `FPS_OPTIONS`, `CRF_RANGE`, `CRF_UI_RANGE`, `VIDEO_EXTENSIONS`) as `as const` arrays.
   - `schemas.ts`: zod schemas (request bodies, `VideoInfo`, `StreamMessage` discriminated union, health/reveal responses, ffprobe output subset).
   - `types.ts`: types inferred from the constants/schemas, plus `Preset`, `PresetId`, `PlatformLimits`, client `Status`.
   - `presets.ts`: per-destination presets with platform limits. Limits only drive non-blocking warnings. Unverified values carry `// TODO: verificar`.
 - **[server/index.ts](server/index.ts)** — single Express file. Endpoints:
   - `GET /api/health` — checks `ffmpeg -version`.
   - `POST /api/pick` — opens the OS-native file dialog from the server ([server/picker.ts](server/picker.ts): `osascript` on macOS, PowerShell `OpenFileDialog` on Windows, `zenity`→`kdialog` on Linux) and returns `{ path: string | null }` (null = cancelled). Browsers never expose real file paths, which is why this lives server-side. One dialog at a time (409 otherwise); client disconnect aborts the dialog.
-  - `POST /api/probe` — zod-validates the body, `cleanPath()` normalizes pasted paths (quotes, `\ ` escapes, `~`, `file://`), then `ffprobe` JSON → `VideoInfo`.
+  - `POST /api/locate` — a dropped `File` only exposes name/size/lastModified, so [server/locate.ts](server/locate.ts) finds it on disk: `mdfind -name` on macOS, then a bounded walk of the home's usual folders (Desktop, Downloads, Movies, Videos, Documents, Pictures; depth 4). Match = same basename + size; the closest mtime wins (±2 s). Returns `{ path: string | null }`.
+  - `POST /api/probe` — zod-validates the body, `cleanPath()` normalizes paths (quotes, `\ ` escapes, `~`, `file://`), then `ffprobe` JSON → `VideoInfo`.
   - `POST /api/compress` — validates with `CompressRequestSchema` (whitelists come from `shared/constants.ts`), re-probes, builds ffmpeg args, and **streams NDJSON** `StreamMessage`s (`start` / `progress` / `done` / `error`). Progress comes from parsing `-progress pipe:1` blocks on stdout. Client disconnect (`res.on('close')`) kills ffmpeg with SIGKILL and deletes the partial output.
   - `POST /api/reveal` — opens the file in Finder/Explorer, but only for paths in the in-memory `outputs` Set (files produced this session).
   - Validation errors map to Spanish messages per field (`FIELD_ERRORS`); malformed JSON returns a JSON `ApiError`. In production, serves `dist/` with an SPA fallback (project root is found by walking up to `package.json`, so it works from `server/` and `dist-server/server/`).
-- **[src/](src/)** — `App.tsx` only composes. Logic lives in hooks (`useHealth`, `usePickFile`, `useProbe`, `useCompress` — reads the NDJSON stream and cancels via `AbortController`, which triggers the server-side kill — and `useSettings`, which persists settings + `presetId` to `localStorage` under `video-compressor:settings`). UI pieces live in `src/components/`; `src/lib/` has the fetch helpers, formatters and limit warnings.
+- **[src/](src/)** — `App.tsx` only composes. Logic lives in hooks (`useHealth`, `usePickFile` (native dialog + locating dropped files), `useProbe`, `useCompress` — reads the NDJSON stream and cancels via `AbortController`, which triggers the server-side kill — and `useSettings`, which persists settings + `presetId` to `localStorage` under `video-compressor:settings`). UI pieces live in `src/components/`; `src/lib/` has the fetch helpers, formatters and limit warnings.
 
 ### Design system
 
 Mirrors [pasajero-website](https://github.com/cobiwave/pasajero-website)'s `app/globals.css`; keep them in sync.
 
-- **[src/styles/globals.css](src/styles/globals.css)**: tokens + reset + grid, copied from the site. `1rem = 10px`; breakpoints in `em`, mobile first with range syntax (`@media (width >= 48em)` tablet, `75em` desktop). Tokens: `--grid-*` (4/8/12 columns), `--space-section`, `--fs-*`, `--lh-*`, `--color-*` (light palette, no accent color). App-only extensions are marked as such: `--space-block`, `--font-mono` (paths/commands), `--color-danger`.
+- **[src/styles/globals.css](src/styles/globals.css)**: tokens + reset + grid, copied from the site. `1rem = 10px`; breakpoints in `em`, mobile first with range syntax (`@media (width >= 48em)` tablet, `75em` desktop). Tokens: `--grid-*` (4/8/12 columns), `--space-section`, `--fs-*`, `--lh-*`, `--color-*` (light palette, no accent color). App-only extensions are marked as such: `--space-block`, `--color-danger`.
 - **Grid**: `.container` (page-level 4/8/12 columns) and `.subgrid` (inherits parent tracks), both in `:where()` (zero specificity). Header, each `Section` and the footer are `.container`s; on desktop the section head takes columns 1–3 and `.sectionBody` (a subgrid) columns 4–12, which `.meta`, `.presets` and `.settings` subgrid again.
 - **[src/styles/fonts.css](src/styles/fonts.css)**: Neue Haas Display (Roman = 400, Medium = 500, remapped like the site) and Stretch Pro (only for the "PASAJERO" wordmark). `local()` first, so the copies installed on the Mac are used; the files in `src/assets/fonts/` are the fallback. Medium's internal name is `NeueHaasDisplay-Mediu` (sic).
 - [src/App.css](src/App.css) uses tokens only, with native CSS nesting. Dev-only grid overlay: press **`g`** ([GridOverlay.tsx](src/components/GridOverlay.tsx), loaded only when `import.meta.env.DEV`).
@@ -55,4 +56,6 @@ Mirrors [pasajero-website](https://github.com/cobiwave/pasajero-website)'s `app/
 
 ## Conventions
 
-All user-facing strings, error messages, code comments, and the README are in Spanish (Rioplatense voseo: "Pegá", "Abrí"). Keep new text consistent.
+All user-facing strings, error messages, code comments, and the README are in neutral Spanish (tú forms, no regional slang or voseo: "Elige", "Abre", "aquí" not "acá"). Keep new text consistent.
+
+The UI is for non-technical users: no tool names (ffmpeg, ffprobe, x264), no jargon (CRF, FPS, codec, bitrate), no file paths or commands on screen. Settings use plain labels ("Calidad", "Tamaño de imagen", "Fluidez") and live behind the collapsed "Ajustes avanzados" toggle; the quality slider is inverted (right = better quality = lower CRF). Server errors shown to the user are plain Spanish; technical details go to `console.error` on the server.
