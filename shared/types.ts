@@ -5,6 +5,8 @@ import type {
   CompressRequestSchema,
   CompressSettingsSchema,
   HealthResponseSchema,
+  LocateRequestSchema,
+  LocateResponseSchema,
   PickResponseSchema,
   ProbeRequestSchema,
   RevealRequestSchema,
@@ -45,6 +47,9 @@ export type RevealRequest = z.infer<typeof RevealRequestSchema>;
 export type RevealResponse = z.infer<typeof RevealResponseSchema>;
 // POST /api/pick  → abre el selector de archivos nativo
 export type PickResponse = z.infer<typeof PickResponseSchema>;
+// POST /api/locate  → busca en el disco un archivo soltado en la página
+export type LocateRequest = z.infer<typeof LocateRequestSchema>;
+export type LocateResponse = z.infer<typeof LocateResponseSchema>;
 
 // --- Presets por destino ---
 export type PresetId = 'vertical' | 'x' | 'linkedin' | 'whatsapp' | 'web' | 'max';

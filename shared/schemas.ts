@@ -19,7 +19,7 @@ export const CompressSettingsSchema = z.object({
   audio: z.boolean(),
 });
 
-const InputPath = z.string().trim().min(1, 'Pegá la ruta de un video');
+const InputPath = z.string().trim().min(1, 'Elige un video');
 
 export const ProbeRequestSchema = z.object({ input: InputPath });
 
@@ -50,6 +50,16 @@ export const RevealResponseSchema = z.object({ ok: z.literal(true) });
 
 /** Ruta elegida en el diálogo nativo; null si el usuario canceló. */
 export const PickResponseSchema = z.object({ path: z.string().nullable() });
+
+/** Datos de un archivo soltado en la página: el navegador no da su ruta, solo esto. */
+export const LocateRequestSchema = z.object({
+  name: z.string().min(1).max(255),
+  size: z.number().int().nonnegative(),
+  lastModified: z.number().int().nonnegative(),
+});
+
+/** Ruta del archivo encontrado en el disco; null si no apareció. */
+export const LocateResponseSchema = z.object({ path: z.string().nullable() });
 
 export const StreamMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('start'), output: z.string(), info: VideoInfoSchema, command: z.string() }),

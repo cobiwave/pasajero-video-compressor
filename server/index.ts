@@ -8,6 +8,7 @@ import type { ZodError } from 'zod';
 import {
   CompressRequestSchema,
   FfprobeOutputSchema,
+  LocateRequestSchema,
   ProbeRequestSchema,
   RevealRequestSchema,
 } from '../shared/schemas.js';
@@ -15,12 +16,14 @@ import type {
   ApiError,
   CompressRequest,
   HealthResponse,
+  LocateResponse,
   PickResponse,
   ProbeResponse,
   RevealResponse,
   StreamMessage,
   VideoInfo,
 } from '../shared/types.js';
+import { locateFile } from './locate.js';
 import { pickVideoFile } from './picker.js';
 
 const PORT = Number(process.env.PORT) || 5174;
@@ -41,7 +44,10 @@ const lastLine = (s: string): string => s.trim().split('\n').filter(Boolean).pop
 
 // Mensajes en español para los errores de validación, según el campo que falló
 const FIELD_ERRORS: Record<string, string> = {
-  input: 'Pegá la ruta de un video',
+  input: 'Elige un video',
+  name: 'Falta el nombre del archivo',
+  size: 'Tamaño de archivo inválido',
+  lastModified: 'Fecha de archivo inválida',
   path: 'Falta la ruta del archivo',
   crf: 'CRF fuera de rango (16–36)',
   preset: 'Preset inválido',
@@ -291,6 +297,18 @@ app.post('/api/pick', async (_req, res: Response<PickResponse | ApiError>) => {
     if (!res.headersSent) res.status(500).json({ error: errorMessage(e) });
   } finally {
     picking = false;
+  }
+});
+
+// Busca en el disco un archivo soltado en la página (el navegador no expone su ruta)
+app.post('/api/locate', async (req: Request, res: Response<LocateResponse | ApiError>) => {
+  const body: unknown = req.body;
+  const parsed = LocateRequestSchema.safeParse(body);
+  if (!parsed.success) return void res.status(400).json(validationError(parsed.error));
+  try {
+    res.json({ path: await locateFile(parsed.data) });
+  } catch (e) {
+    res.status(500).json({ error: errorMessage(e) });
   }
 });
 

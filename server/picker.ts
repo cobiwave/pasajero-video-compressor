@@ -1,10 +1,9 @@
 import { spawn } from 'node:child_process';
+import { VIDEO_EXTENSIONS } from '../shared/constants.js';
 
 // Abre el diálogo nativo del sistema para elegir un video y devuelve su ruta absoluta.
 // El navegador no expone rutas reales de archivos; como el servidor corre en la misma
-// máquina, abrimos el diálogo desde acá. Los comandos son fijos: no reciben input del usuario.
-
-const VIDEO_EXTENSIONS = ['mp4', 'mov', 'm4v', 'mkv', 'webm', 'avi', 'mts', 'm2ts', 'wmv', 'flv', 'mpg', 'mpeg'];
+// máquina, abrimos el diálogo desde aquí. Los comandos son fijos: no reciben input del usuario.
 
 interface Command {
   cmd: string;
@@ -16,7 +15,7 @@ interface Command {
 // macOS: `activate` trae el diálogo de osascript al frente; cancelar sale con código 1 (error -128)
 const MAC_SCRIPT = [
   'activate',
-  'POSIX path of (choose file with prompt "Elegí un video para comprimir" of type {"public.movie", "public.mpeg-4", "com.apple.quicktime-movie", "org.matroska.mkv", "org.webmproject.webm"})',
+  'POSIX path of (choose file with prompt "Elige un video para comprimir" of type {"public.movie", "public.mpeg-4", "com.apple.quicktime-movie", "org.matroska.mkv", "org.webmproject.webm"})',
 ];
 
 // Windows: OpenFileDialog de .NET con una ventana dueña "TopMost" para que aparezca adelante del navegador
@@ -25,7 +24,7 @@ const WIN_SCRIPT = `
 Add-Type -AssemblyName System.Windows.Forms
 $owner = New-Object System.Windows.Forms.Form -Property @{ TopMost = $true; ShowInTaskbar = $false }
 $d = New-Object System.Windows.Forms.OpenFileDialog
-$d.Title = 'Elegí un video para comprimir'
+$d.Title = 'Elige un video para comprimir'
 $d.Filter = 'Videos|${VIDEO_EXTENSIONS.map((e) => `*.${e}`).join(';')}|Todos los archivos|*.*'
 if ($d.ShowDialog($owner) -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.FileName; exit 0 }
 exit 1
@@ -44,7 +43,7 @@ function commandsFor(platform: NodeJS.Platform): Command[] {
       cmd: 'zenity',
       args: [
         '--file-selection',
-        '--title=Elegí un video para comprimir',
+        '--title=Elige un video para comprimir',
         `--file-filter=Videos | ${VIDEO_EXTENSIONS.map((e) => `*.${e}`).join(' ')}`,
         '--file-filter=Todos los archivos | *',
       ],
@@ -93,5 +92,5 @@ export async function pickVideoFile(signal: AbortSignal): Promise<string | null>
       throw e;
     }
   }
-  throw new Error('No se encontró un selector de archivos en el sistema. En Linux instalá zenity o kdialog.');
+  throw new Error('No se encontró un selector de archivos en el sistema. En Linux instala zenity o kdialog.');
 }

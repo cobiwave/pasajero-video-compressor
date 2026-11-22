@@ -1,5 +1,5 @@
 // Única fuente de verdad para los valores permitidos. El servidor los usa como
-// whitelist y el cliente para armar los controles; los tipos se derivan de acá.
+// whitelist y el cliente para armar los controles; los tipos se derivan de aquí.
 
 /** Presets de velocidad de x264 que se pueden elegir. */
 export const X264_PRESETS = ['veryfast', 'medium', 'slow'] as const;
@@ -18,3 +18,8 @@ export const CRF_UI_RANGE = { min: 18, max: 32 } as const;
 
 export const MB = 1024 * 1024;
 export const GB = 1024 * MB;
+
+/** Extensiones de video que aceptan el selector nativo y la zona para soltar archivos. */
+export const VIDEO_EXTENSIONS = [
+  'mp4', 'mov', 'm4v', 'mkv', 'webm', 'avi', 'mts', 'm2ts', 'wmv', 'flv', 'mpg', 'mpeg',
+] as const;
