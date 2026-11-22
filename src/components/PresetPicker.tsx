@@ -18,7 +18,7 @@ function summary({ limits }: Preset): string {
 
 export function PresetPicker({ presets, activeId, modified, onChoose, disabled }: Props) {
   return (
-    <div className="presets" role="radiogroup" aria-label="Destino">
+    <div className="subgrid presets" role="radiogroup" aria-label="Destino">
       {presets.map((p) => {
         const active = p.id === activeId;
         return (

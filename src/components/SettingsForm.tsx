@@ -36,7 +36,7 @@ const pick = <T extends string | number>(options: readonly T[], value: string): 
 
 export function SettingsForm({ settings, update, disabled }: Props) {
   return (
-    <div className="grid">
+    <div className="subgrid settings">
       <label className="field wide">
         <span className="label">
           Calidad (CRF) <b>{settings.crf}</b>

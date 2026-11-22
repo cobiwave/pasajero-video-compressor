@@ -1,0 +1,186 @@
+/* ==========================================================================
+   Design system de PASAJERO — espejo de app/globals.css de pasajero-website.
+   Si cambia allá, actualizalo acá.
+
+   Tokens mobile first. 1rem = 10px (html font-size: 62.5%).
+   Los breakpoints van en `em` porque los media queries ignoran el font-size
+   del html: 48em = 768px (tablet), 75em = 1200px (desktop).
+   ========================================================================== */
+
+:root {
+	/* Grilla */
+	--grid-columns: 4;
+	--grid-gutter: 1.6rem;
+	--grid-margin: 2rem;
+	--grid-max-width: 144rem;
+
+	/* Espaciado */
+	--space-section: 9.6rem;
+
+	/* Escala tipográfica */
+	--fs-caption: 1.2rem;
+	--fs-body: 1.6rem;
+	--fs-lead: 2rem;
+	--fs-heading: 3.2rem;
+	--fs-display: 4.4rem;
+
+	--lh-tight: 1;
+	--lh-snug: 1.2;
+	--lh-body: 1.5;
+
+	/* Familias (ver styles/fonts.css) */
+	--font-sans: "Neue Haas Display", "Helvetica Neue", Arial, sans-serif;
+	--font-display: "Stretch Pro", var(--font-sans);
+
+	/* Color */
+	--color-bg: #f4f4f1;
+	--color-fg: #111111;
+	--color-muted: #6e6e6a;
+	--color-line: #d6d6d0;
+	--color-placeholder: #e3e3de;
+	--color-on-media: #ffffff;
+
+	/* --- Extensiones propias de la app (no existen en el sitio) --- */
+	/* Bloques dentro de una página: la mitad de una sección. */
+	--space-block: calc(var(--space-section) / 2);
+	/* Rutas y comandos de ffmpeg: mono del sistema, sin descargar fuentes. */
+	--font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+	/* Errores y avisos destructivos. */
+	--color-danger: #b3261e;
+
+	color-scheme: light;
+}
+
+@media (width >= 48em) {
+	:root {
+		--grid-columns: 8;
+		--grid-gutter: 2.4rem;
+		--grid-margin: 4rem;
+
+		--space-section: 14.4rem;
+
+		--fs-caption: 1.3rem;
+		--fs-body: 1.8rem;
+		--fs-lead: 2.4rem;
+		--fs-heading: 4.8rem;
+		--fs-display: 8rem;
+	}
+}
+
+@media (width >= 75em) {
+	:root {
+		--grid-columns: 12;
+		--grid-gutter: 3.2rem;
+		--grid-margin: 6.4rem;
+
+		--space-section: 19.2rem;
+
+		--fs-lead: 2.8rem;
+		--fs-heading: 6.4rem;
+		/* Fluido para que el display llene las 12 columnas en pantallas anchas. */
+		--fs-display: clamp(11.2rem, 10vw, 16rem);
+	}
+}
+
+/* ==========================================================================
+   Reset
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	font-size: 62.5%;
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+body {
+	min-height: 100svh;
+	font-family: var(--font-sans);
+	font-size: var(--fs-body);
+	line-height: var(--lh-body);
+	color: var(--color-fg);
+	background: var(--color-bg);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+dd,
+li,
+a {
+	overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	font-size: inherit;
+	font-weight: inherit;
+	line-height: var(--lh-snug);
+	text-wrap: balance;
+}
+
+p {
+	text-wrap: pretty;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+ul,
+ol {
+	list-style: none;
+}
+
+img,
+svg,
+video {
+	display: block;
+	max-width: 100%;
+}
+
+/* ==========================================================================
+   Grilla
+   Envueltas en :where() → especificidad cero, así cualquier clase de la app
+   las pisa sin importar el orden de las hojas de estilo.
+   ========================================================================== */
+
+/* Grilla de página (4/8/12 columnas). Cada bloque es un .container. */
+:where(.container) {
+	display: grid;
+	grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+	column-gap: var(--grid-gutter);
+	width: 100%;
+	max-width: var(--grid-max-width);
+	margin-inline: auto;
+	padding-inline: var(--grid-margin);
+}
+
+/*
+  Grupo anidado que hereda las columnas del padre, así sus hijos se alinean a
+  los mismos tracks. Ocupa todo el padre por defecto; para achicarlo, pisá
+  grid-column en la clase propia.
+
+  El subgrid de filas (grid-template-rows: subgrid) se aplica por componente y
+  necesita un `grid-row: span N` explícito: sin eso los hijos colapsan en un
+  único track y se superponen.
+*/
+:where(.subgrid) {
+	display: grid;
+	grid-column: 1 / -1;
+	grid-template-columns: subgrid;
+}

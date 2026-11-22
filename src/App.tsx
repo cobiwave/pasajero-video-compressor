@@ -63,18 +63,16 @@ export default function App() {
 
   return (
     <main className="app">
-      <header className="top">
-        <div className="topBar">
-          <span className="wordmark">PASAJERO</span>
-          <span className={`status status-${status}`}>{STATUS_LABELS[status]}</span>
+      <header className="container top">
+        <p className="wordmark">PASAJERO</p>
+        <span className={`status status-${status}`}>{STATUS_LABELS[status]}</span>
+        <h1 className="title">Video Compressor</h1>
+        <div className="intro">
+          <p>Videos livianos para redes sociales y la web, con ffmpeg. Todo queda en tu máquina.</p>
+          {health && (
+            <p className={`health ${health.ok ? 'ok' : 'bad'}`}>{health.ok ? health.version : health.error}</p>
+          )}
         </div>
-        <h1>
-          Video <em>Compressor</em>
-        </h1>
-        <p className="sub">Videos livianos para redes sociales y la web, con ffmpeg. Todo queda en tu máquina.</p>
-        {health && (
-          <p className={`health ${health.ok ? 'ok' : 'bad'}`}>{health.ok ? health.version : health.error}</p>
-        )}
       </header>
 
       <Section index="01" title="Fuente">
@@ -143,7 +141,9 @@ export default function App() {
         </Section>
       )}
 
-      <footer className="foot">PASAJERO · Estudio de cine y fotografía</footer>
+      <footer className="container foot">
+        <p>PASAJERO · Estudio de cine y fotografía</p>
+      </footer>
     </main>
   );
 }

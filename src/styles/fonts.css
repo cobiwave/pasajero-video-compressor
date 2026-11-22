@@ -1,0 +1,41 @@
+/* ==========================================================================
+   Tipografías — las mismas que pasajero-website.
+   `local()` va primero: si la fuente está instalada en la Mac se usa esa y no
+   se descarga nada; los archivos de src/assets/fonts/ son el respaldo.
+   Los pesos OS/2 de los .ttf están corridos (Light = 400, Roman = 500), así que
+   se remapean a la convención CSS igual que en el sitio: Roman = 400,
+   Medium = 500. Ojo: el nombre interno de Medium es "NeueHaasDisplay-Mediu".
+   ========================================================================== */
+
+@font-face {
+	font-family: "Neue Haas Display";
+	src:
+		local("NeueHaasDisplay-Roman"),
+		url("../assets/fonts/NeueHaasDisplayRoman.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Neue Haas Display";
+	src:
+		local("NeueHaasDisplay-Mediu"),
+		local("NeueHaasDisplay-Medium"),
+		url("../assets/fonts/NeueHaasDisplayMedium.ttf") format("truetype");
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* Fuente display: solo para el wordmark "PASAJERO". */
+@font-face {
+	font-family: "Stretch Pro";
+	src:
+		local("StretchProRegular"),
+		local("Stretch Pro"),
+		url("../assets/fonts/StretchPro.otf") format("opentype");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
