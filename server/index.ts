@@ -61,6 +61,11 @@ function validationError(error: ZodError): ApiError {
   return { error: (typeof field === 'string' && FIELD_ERRORS[field]) || 'El pedido no es válido' };
 }
 
+// Mensajes para el usuario: sin nombres de herramientas ni detalles técnicos.
+// El detalle técnico va a la consola del servidor.
+const MISSING_TOOL = 'Falta un componente necesario para comprimir videos. Revisa las instrucciones de instalación.';
+const UNREADABLE = 'No se pudo abrir este video. Puede que el archivo esté dañado o que no sea un video.';
+
 // Ejecuta un comando y devuelve stdout (sin shell: los argumentos no se interpretan)
 const run = (cmd: string, args: readonly string[]): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -69,9 +74,7 @@ const run = (cmd: string, args: readonly string[]): Promise<string> =>
     let err = '';
     p.stdout.on('data', (d: Buffer) => (out += d.toString()));
     p.stderr.on('data', (d: Buffer) => (err += d.toString()));
-    p.on('error', (e) =>
-      reject(isErrnoCode(e, 'ENOENT') ? new Error(`No se encontró "${cmd}". ¿Está instalado ffmpeg?`) : e),
-    );
+    p.on('error', (e) => reject(isErrnoCode(e, 'ENOENT') ? new Error(MISSING_TOOL) : e));
     p.on('close', (code) =>
       code === 0 ? resolve(out) : reject(new Error(lastLine(err) || `${cmd} terminó con código ${code}`)),
     );
@@ -87,8 +90,8 @@ function cleanPath(raw: string): string {
 
 function resolveInput(raw: string): string {
   const p = path.resolve(cleanPath(raw));
-  if (!fs.existsSync(p)) throw new Error('No existe ningún archivo en esa ruta');
-  if (!fs.statSync(p).isFile()) throw new Error('La ruta apunta a una carpeta, no a un video');
+  if (!fs.existsSync(p)) throw new Error('No se encontró el archivo');
+  if (!fs.statSync(p).isFile()) throw new Error('Eso es una carpeta, no un video');
   return p;
 }
 
@@ -104,14 +107,16 @@ async function probe(input: string): Promise<VideoInfo> {
       await run('ffprobe', ['-v', 'error', '-print_format', 'json', '-show_format', '-show_streams', input]),
     );
   } catch (e) {
-    throw e instanceof SyntaxError ? new Error('ffprobe devolvió una respuesta inválida') : e;
+    if (e instanceof Error && e.message === MISSING_TOOL) throw e;
+    console.error(`ffprobe falló con ${input}:`, errorMessage(e));
+    throw new Error(UNREADABLE);
   }
   const parsed = FfprobeOutputSchema.safeParse(raw);
-  if (!parsed.success) throw new Error('No se pudo leer la información del video');
+  if (!parsed.success) throw new Error(UNREADABLE);
   const { streams, format } = parsed.data;
 
   const v = streams.find((s) => s.codec_type === 'video');
-  if (!v || !v.width || !v.height) throw new Error('El archivo no tiene una pista de video');
+  if (!v || !v.width || !v.height) throw new Error('Este archivo no contiene video');
   const rate = v.avg_frame_rate && v.avg_frame_rate !== '0/0' ? v.avg_frame_rate : v.r_frame_rate;
 
   return {
@@ -164,7 +169,8 @@ app.get('/api/health', async (_req, res: Response<HealthResponse>) => {
     const v = await run('ffmpeg', ['-hide_banner', '-version']);
     res.json({ ok: true, version: v.split('\n')[0] ?? 'ffmpeg' });
   } catch (e) {
-    res.json({ ok: false, error: errorMessage(e) });
+    console.error('ffmpeg no está disponible:', errorMessage(e));
+    res.json({ ok: false, error: MISSING_TOOL });
   }
 });
 
@@ -238,7 +244,8 @@ app.post('/api/compress', async (req: Request, res: Response<ApiError>) => {
 
   ff.on('error', (e) => {
     finished = true;
-    send({ type: 'error', message: isErrnoCode(e, 'ENOENT') ? 'No se encontró ffmpeg en el sistema' : e.message });
+    console.error('No se pudo iniciar ffmpeg:', e.message);
+    send({ type: 'error', message: isErrnoCode(e, 'ENOENT') ? MISSING_TOOL : 'No se pudo comprimir el video' });
     res.end();
   });
 
@@ -254,7 +261,8 @@ app.post('/api/compress', async (req: Request, res: Response<ApiError>) => {
       send({ type: 'done', output, size: fs.statSync(output).size, originalSize: info.size });
     } else {
       fs.rm(output, { force: true }, () => {});
-      send({ type: 'error', message: lastLine(errTail) || `ffmpeg terminó con código ${code}` });
+      console.error(`ffmpeg terminó con código ${code}:`, lastLine(errTail));
+      send({ type: 'error', message: 'No se pudo comprimir el video. Prueba con otro destino o con otro archivo.' });
     }
     res.end();
   });
@@ -343,5 +351,5 @@ app.use(onError);
 // Solo escucha en localhost: nadie más en tu red puede usarlo
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`API lista en http://127.0.0.1:${PORT}`);
-  if (fs.existsSync(dist)) console.log(`Abrí http://127.0.0.1:${PORT} en el navegador`);
+  if (fs.existsSync(dist)) console.log(`Abre http://127.0.0.1:${PORT} en el navegador`);
 });
