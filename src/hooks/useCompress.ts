@@ -15,7 +15,6 @@ export interface CompressState {
   phase: CompressPhase;
   progress: Progress;
   result: DoneMessage | null;
-  command: string;
   error: string;
   compress: (input: string, settings: CompressSettings) => Promise<void>;
   cancel: () => void;
@@ -41,10 +40,10 @@ async function* readMessages(body: ReadableStream<Uint8Array>): AsyncGenerator<S
       try {
         raw = JSON.parse(line);
       } catch {
-        throw new ApiRequestError('El servidor mandó un mensaje ilegible');
+        throw new ApiRequestError('El servidor envió un mensaje ilegible');
       }
       const parsed = StreamMessageSchema.safeParse(raw);
-      if (!parsed.success) throw new ApiRequestError('El servidor mandó un mensaje inesperado');
+      if (!parsed.success) throw new ApiRequestError('El servidor envió un mensaje inesperado');
       yield parsed.data;
     }
   }
@@ -58,7 +57,6 @@ export function useCompress(): CompressState {
   const [phase, setPhase] = useState<CompressPhase>('idle');
   const [progress, setProgress] = useState<Progress>(INITIAL_PROGRESS);
   const [result, setResult] = useState<DoneMessage | null>(null);
-  const [command, setCommand] = useState('');
   const [error, setError] = useState('');
   const abortRef = useRef<AbortController | null>(null);
 
@@ -67,7 +65,6 @@ export function useCompress(): CompressState {
     setPhase('idle');
     setResult(null);
     setError('');
-    setCommand('');
   }, []);
 
   const compress = useCallback(async (input: string, settings: CompressSettings) => {
@@ -76,7 +73,6 @@ export function useCompress(): CompressState {
     setPhase('running');
     setError('');
     setResult(null);
-    setCommand('');
     setProgress(INITIAL_PROGRESS);
 
     try {
@@ -94,7 +90,6 @@ export function useCompress(): CompressState {
       for await (const msg of readMessages(r.body)) {
         switch (msg.type) {
           case 'start':
-            setCommand(msg.command);
             break;
           case 'progress':
             setProgress({ percent: msg.percent ?? 0, time: msg.time, speed: msg.speed });
@@ -108,7 +103,7 @@ export function useCompress(): CompressState {
             throw new ApiRequestError(msg.message);
         }
       }
-      if (!finished) throw new ApiRequestError('La compresión se cortó antes de terminar');
+      if (!finished) throw new ApiRequestError('La compresión se interrumpió antes de terminar');
     } catch (e) {
       if (isAbortError(e)) {
         setPhase('idle');
@@ -123,5 +118,5 @@ export function useCompress(): CompressState {
 
   const cancel = useCallback(() => abortRef.current?.abort(), []);
 
-  return { phase, progress, result, command, error, compress, cancel, reset };
+  return { phase, progress, result, error, compress, cancel, reset };
 }

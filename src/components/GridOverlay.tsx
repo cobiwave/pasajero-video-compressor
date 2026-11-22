@@ -6,7 +6,7 @@ const MAX_COLUMNS = 12;
 
 /**
  * Overlay de la grilla, solo en desarrollo (main.tsx lo carga con
- * `import.meta.env.DEV`). Apretá "g" para mostrarlo u ocultarlo.
+ * `import.meta.env.DEV`). Pulsa "g" para mostrarlo u ocultarlo.
  * El estado vive en un atributo de <html> y se recuerda en localStorage.
  */
 export function GridOverlay() {

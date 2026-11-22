@@ -1,7 +1,7 @@
 /* ==========================================================================
    PASAJERO Video Compressor — estilos de la app.
    Todo sale de los tokens de styles/globals.css (design system del sitio):
-   no hardcodees tamaños ni colores acá. Mobile first, breakpoints en `em`
+   no hardcodees tamaños ni colores aquí. Mobile first, breakpoints en `em`
    con sintaxis de rango, y nesting nativo como en el sitio.
 
    Layout: cada bloque (encabezado, secciones, pie) es un `.container`
@@ -129,20 +129,8 @@
 }
 
 .health {
-	overflow: hidden;
 	font-size: var(--fs-caption);
-	color: var(--color-muted);
-	text-overflow: ellipsis;
-	white-space: nowrap;
-
-	&.ok::before {
-		content: "● ";
-		color: var(--color-fg);
-	}
-
-	&.bad {
-		color: var(--color-danger);
-	}
+	color: var(--color-danger);
 }
 
 /* ==========================================================================
@@ -230,35 +218,77 @@
 	color: var(--color-muted);
 }
 
-.pathForm {
+/* Zona para soltar el video o hacer clic y elegirlo */
+.source {
 	display: grid;
 	row-gap: 1.2rem;
 }
 
-.pickButton {
-	justify-self: start;
-}
-
-.or {
-	margin-block-start: 0.8rem;
-}
-
-.row {
-	display: flex;
-	flex-direction: column;
-	gap: 0.8rem;
+.dropzone {
+	display: grid;
+	place-content: center;
+	justify-items: center;
+	row-gap: 0.8rem;
+	min-height: 24rem;
+	padding: var(--grid-gutter);
+	font: inherit;
+	color: var(--color-fg);
+	text-align: center;
+	background: transparent;
+	border: 1px dashed var(--color-muted);
+	border-radius: 0;
+	cursor: pointer;
+	transition:
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		color 0.2s ease;
 
 	@media (width >= 48em) {
-		flex-direction: row;
+		min-height: 32rem;
 	}
 
-	& input {
-		flex: 1;
-		min-width: 0;
+	/* Los hijos no disparan dragenter/dragleave propios */
+	& > * {
+		pointer-events: none;
+	}
+
+	&.over {
+		color: var(--color-bg);
+		background: var(--color-fg);
+		border-style: solid;
+		border-color: var(--color-fg);
+	}
+
+	&.has-file:not(.over) {
+		min-height: 16rem;
+		border-style: solid;
+		border-color: var(--color-line);
+	}
+
+	&:hover:not(:disabled),
+	&:focus-visible {
+		border-color: var(--color-fg);
+		outline: none;
+	}
+
+	&:disabled {
+		cursor: progress;
+		color: var(--color-muted);
 	}
 }
 
-input[type="text"],
+.dropzoneTitle {
+	font-size: var(--fs-lead);
+	font-weight: 500;
+	line-height: var(--lh-snug);
+	overflow-wrap: anywhere;
+}
+
+.dropzoneHint {
+	font-size: var(--fs-caption);
+	color: var(--color-muted);
+}
+
 select {
 	font: inherit;
 	color: var(--color-fg);
@@ -278,15 +308,6 @@ select {
 	}
 }
 
-input[type="text"] {
-	font-family: var(--font-mono);
-	font-size: var(--fs-caption);
-
-	&::placeholder {
-		color: var(--color-muted);
-	}
-}
-
 select {
 	appearance: none;
 	padding-inline-end: 3.4rem;
@@ -298,19 +319,6 @@ select {
 		calc(100% - 1.3rem) 52%;
 	background-size: 0.5rem 0.5rem;
 	background-repeat: no-repeat;
-}
-
-.hint {
-	font-size: var(--fs-caption);
-	color: var(--color-muted);
-}
-
-kbd {
-	font-family: inherit;
-	font-size: var(--fs-caption);
-	border: 1px solid var(--color-line);
-	border-radius: 0.2rem;
-	padding: 0 0.4rem;
 }
 
 /* ==========================================================================
@@ -407,13 +415,6 @@ kbd {
 	opacity: 0.7;
 }
 
-.presetSpec {
-	margin-block-start: 0.8rem;
-	font-size: var(--fs-caption);
-	font-variant-numeric: tabular-nums;
-	opacity: 0.55;
-}
-
 /* ==========================================================================
    Ajustes
    ========================================================================== */
@@ -440,13 +441,6 @@ kbd {
 		grid-column: 1 / -1;
 	}
 
-	& b {
-		margin-inline-start: 0.6rem;
-		font-weight: 500;
-		color: var(--color-fg);
-		font-variant-numeric: tabular-nums;
-	}
-
 	& small {
 		font-size: var(--fs-caption);
 		color: var(--color-muted);
@@ -469,6 +463,33 @@ kbd {
 input[type="range"] {
 	width: 100%;
 	accent-color: var(--color-fg);
+}
+
+/* Etiquetas en los extremos del slider de calidad */
+.rangeEnds {
+	display: flex;
+	justify-content: space-between;
+	gap: 1.6rem;
+}
+
+/* Botón de texto que muestra u oculta los ajustes avanzados */
+.toggle {
+	justify-self: start;
+	padding: 0;
+	color: var(--color-muted);
+	background: none;
+
+	&::after {
+		content: " +";
+	}
+
+	&[aria-expanded="true"]::after {
+		content: " −";
+	}
+
+	&:hover:not(:disabled) {
+		color: var(--color-fg);
+	}
 }
 
 input[type="checkbox"] {
@@ -515,8 +536,7 @@ button {
 
 button:focus-visible,
 input:focus-visible,
-select:focus-visible,
-summary:focus-visible {
+select:focus-visible {
 	outline: 2px solid currentColor;
 	outline-offset: 2px;
 }
@@ -578,7 +598,7 @@ summary:focus-visible {
 	letter-spacing: -0.035em;
 }
 
-.timecode {
+.eta {
 	font-size: var(--fs-caption);
 	color: var(--color-muted);
 }
@@ -647,31 +667,14 @@ summary:focus-visible {
 }
 
 .out {
-	display: block;
-	font-family: var(--font-mono);
 	font-size: var(--fs-caption);
 	color: var(--color-muted);
-	word-break: break-all;
-}
+	overflow-wrap: anywhere;
 
-details {
-	font-size: var(--fs-caption);
-	color: var(--color-muted);
-}
-
-summary {
-	cursor: pointer;
-}
-
-pre {
-	margin-block-start: 1.2rem;
-	padding: 1.4rem;
-	font-family: var(--font-mono);
-	font-size: var(--fs-caption);
-	line-height: var(--lh-body);
-	white-space: pre-wrap;
-	word-break: break-all;
-	background: var(--color-placeholder);
+	& strong {
+		font-weight: 500;
+		color: var(--color-fg);
+	}
 }
 
 /* ==========================================================================

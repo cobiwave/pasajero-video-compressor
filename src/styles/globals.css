@@ -1,6 +1,6 @@
 /* ==========================================================================
    Design system de PASAJERO — espejo de app/globals.css de pasajero-website.
-   Si cambia allá, actualizalo acá.
+   Si cambia allí, actualízalo aquí.
 
    Tokens mobile first. 1rem = 10px (html font-size: 62.5%).
    Los breakpoints van en `em` porque los media queries ignoran el font-size
@@ -43,8 +43,6 @@
 	/* --- Extensiones propias de la app (no existen en el sitio) --- */
 	/* Bloques dentro de una página: la mitad de una sección. */
 	--space-block: calc(var(--space-section) / 2);
-	/* Rutas y comandos de ffmpeg: mono del sistema, sin descargar fuentes. */
-	--font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 	/* Errores y avisos destructivos. */
 	--color-danger: #b3261e;
 
@@ -172,7 +170,7 @@ video {
 
 /*
   Grupo anidado que hereda las columnas del padre, así sus hijos se alinean a
-  los mismos tracks. Ocupa todo el padre por defecto; para achicarlo, pisá
+  los mismos tracks. Ocupa todo el padre por defecto; para reducirlo, sobrescribe
   grid-column en la clase propia.
 
   El subgrid de filas (grid-template-rows: subgrid) se aplica por componente y

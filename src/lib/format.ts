@@ -13,9 +13,3 @@ export function formatDuration(s: number): string {
   const sec = String(Math.floor(s % 60)).padStart(2, '0');
   return h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
 }
-
-/** Timecode estilo HH:MM:SS para el progreso. */
-export function formatTimecode(s: number): string {
-  const t = Math.max(0, Math.floor(s));
-  return [t / 3600, (t % 3600) / 60, t % 60].map((n) => String(Math.floor(n)).padStart(2, '0')).join(':');
-}

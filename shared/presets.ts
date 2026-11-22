@@ -11,7 +11,7 @@ export const PRESETS: readonly Preset[] = [
   {
     id: 'vertical',
     label: 'Instagram / TikTok',
-    description: 'Reels y TikTok verticales 9:16',
+    description: 'Reels y TikToks en vertical',
     platform: 'Instagram Reels · TikTok',
     settings: { crf: 23, fps: 30, width: 1080, preset: 'slow', audio: true },
     limits: {
@@ -38,7 +38,7 @@ export const PRESETS: readonly Preset[] = [
   {
     id: 'linkedin',
     label: 'LinkedIn',
-    description: 'Videos nativos en el feed',
+    description: 'Videos para publicar en tu perfil',
     platform: 'LinkedIn',
     settings: { crf: 26, fps: 30, width: 1920, preset: 'slow', audio: true },
     limits: {
@@ -52,7 +52,7 @@ export const PRESETS: readonly Preset[] = [
   {
     id: 'whatsapp',
     label: 'WhatsApp',
-    description: 'Para mandar por chat sin que lo recompriman',
+    description: 'Para enviar por chat sin perder calidad',
     platform: 'WhatsApp',
     settings: { crf: 28, fps: 30, width: 1280, preset: 'slow', audio: true },
     limits: {
@@ -65,7 +65,7 @@ export const PRESETS: readonly Preset[] = [
   {
     id: 'web',
     label: 'Web',
-    description: 'Video de fondo o hero: liviano y sin audio',
+    description: 'Videos de fondo para páginas web, sin sonido',
     platform: 'Sitio web',
     settings: { crf: 28, fps: 30, width: 1920, preset: 'slow', audio: false },
     limits: { resolution: '1920×1080', maxDuration: null, maxSize: null, maxFps: null },
@@ -73,8 +73,8 @@ export const PRESETS: readonly Preset[] = [
   {
     id: 'max',
     label: 'Máxima calidad',
-    description: 'Resolución y FPS originales, CRF bajo',
-    platform: 'Archivo / master liviano',
+    description: 'Casi igual al original, pero más ligero',
+    platform: 'Para guardar',
     settings: { crf: 18, fps: 0, width: 0, preset: 'slow', audio: true },
     limits: { resolution: 'Original', maxDuration: null, maxSize: null, maxFps: null },
   },

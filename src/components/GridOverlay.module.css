@@ -1,5 +1,5 @@
 /* Usa el .container global, así siempre coincide con los tokens de la grilla.
-   Si cambian los breakpoints o la cantidad de columnas, actualizá los
+   Si cambian los breakpoints o la cantidad de columnas, actualiza los
    nth-child y las etiquetas. */
 .overlay {
 	position: fixed;

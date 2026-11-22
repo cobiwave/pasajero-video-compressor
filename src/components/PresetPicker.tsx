@@ -1,5 +1,4 @@
 import type { Preset, PresetId } from '../../shared/types';
-import { formatBytes, formatDuration } from '../lib/format';
 
 interface Props {
   presets: readonly Preset[];
@@ -7,13 +6,6 @@ interface Props {
   modified: boolean;
   onChoose: (id: PresetId) => void;
   disabled: boolean;
-}
-
-function summary({ limits }: Preset): string {
-  const parts = [limits.resolution];
-  if (limits.maxDuration) parts.push(`máx. ${formatDuration(limits.maxDuration)}`);
-  if (limits.maxSize) parts.push(`máx. ${formatBytes(limits.maxSize)}`);
-  return parts.join(' · ');
 }
 
 export function PresetPicker({ presets, activeId, modified, onChoose, disabled }: Props) {
@@ -37,7 +29,6 @@ export function PresetPicker({ presets, activeId, modified, onChoose, disabled }
               {active && modified && <em> · ajustado</em>}
             </strong>
             <span className="presetDesc">{p.description}</span>
-            <span className="presetSpec">{summary(p)}</span>
           </button>
         );
       })}

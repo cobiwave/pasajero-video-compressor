@@ -3,9 +3,9 @@ import { HealthResponseSchema } from '../../shared/schemas';
 import type { HealthResponse } from '../../shared/types';
 import { readJson } from '../lib/api';
 
-const OFFLINE: HealthResponse = { ok: false, error: 'No se pudo conectar con el servidor local' };
+const OFFLINE: HealthResponse = { ok: false, error: 'La app no responde. Ciérrala y vuelve a abrirla.' };
 
-/** Chequea que el servidor esté arriba y que ffmpeg esté instalado. null = todavía cargando. */
+/** Comprueba que el servidor responda y pueda comprimir. null = todavía cargando. */
 export function useHealth(): HealthResponse | null {
   const [health, setHealth] = useState<HealthResponse | null>(null);
 

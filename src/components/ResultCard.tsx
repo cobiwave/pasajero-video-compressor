@@ -6,13 +6,14 @@ import { formatBytes } from '../lib/format';
 
 interface Props {
   result: DoneMessage;
-  command: string;
   warnings: string[];
 }
 
-export function ResultCard({ result, command, warnings }: Props) {
+/** Nombre del archivo, sin la carpeta (sirve para rutas de Mac, Linux y Windows). */
+const fileName = (p: string): string => p.split(/[\\/]/).pop() ?? p;
+
+export function ResultCard({ result, warnings }: Props) {
   const [error, setError] = useState('');
-  const [copied, setCopied] = useState(false);
   const saved = Math.round((1 - result.size / result.originalSize) * 100);
 
   const reveal = async () => {
@@ -25,16 +26,6 @@ export function ResultCard({ result, command, warnings }: Props) {
     }
   };
 
-  const copy = () => {
-    navigator.clipboard
-      ?.writeText(result.output)
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      })
-      .catch(() => {});
-  };
-
   return (
     <div className="result">
       <div className="sizes">
@@ -45,7 +36,9 @@ export function ResultCard({ result, command, warnings }: Props) {
         <strong>{formatBytes(result.size)}</strong>
         <span className={`badge ${saved < 0 ? 'neg' : ''}`}>{saved >= 0 ? `−${saved}%` : `+${Math.abs(saved)}%`}</span>
       </div>
-      <code className="out">{result.output}</code>
+      <p className="out">
+        Se guardó junto al original como <strong>{fileName(result.output)}</strong>
+      </p>
 
       {warnings.length > 0 && (
         <ul className="warnings">
@@ -59,18 +52,8 @@ export function ResultCard({ result, command, warnings }: Props) {
         <button type="button" className="primary" onClick={reveal}>
           Mostrar en carpeta
         </button>
-        <button type="button" className="secondary" onClick={copy}>
-          {copied ? 'Copiada' : 'Copiar ruta'}
-        </button>
       </div>
       {error && <p className="error">{error}</p>}
-
-      {command && (
-        <details>
-          <summary>Comando ffmpeg usado</summary>
-          <pre>{command}</pre>
-        </details>
-      )}
     </div>
   );
 }

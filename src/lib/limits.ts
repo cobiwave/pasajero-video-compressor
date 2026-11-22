@@ -18,12 +18,12 @@ export function limitWarnings(
   if (info && limits.maxFps) {
     const outFps = settings.fps ? Math.min(settings.fps, info.fps) : info.fps;
     if (outFps > limits.maxFps + 0.5) {
-      warnings.push(`Va a salir a ${Math.round(outFps)} fps; ${platform} acepta hasta ${limits.maxFps} fps.`);
+      warnings.push(`${platform} acepta hasta ${limits.maxFps} cuadros por segundo. Baja la fluidez en los ajustes.`);
     }
   }
   if (outputSize && limits.maxSize && outputSize > limits.maxSize) {
     warnings.push(
-      `Pesa ${formatBytes(outputSize)}; ${platform} acepta hasta ${formatBytes(limits.maxSize)}. Probá subir el CRF o bajar la resolución.`,
+      `Pesa ${formatBytes(outputSize)}; ${platform} acepta hasta ${formatBytes(limits.maxSize)}. Prueba con menos calidad o un tamaño de imagen menor.`,
     );
   }
   return warnings;
